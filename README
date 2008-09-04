@@ -1,0 +1,8 @@
+To run 'rezolucja' you need:
+ - mono framework
+ - Drools.Net library - http://droolsdotnet.codehause.net
+
+Installation:
+ - get *.dll file from site above and unpack to ddn/ directory
+ - type ./configure && make
+ - type mono sld-res/bin/Debug/sld-res.exe
