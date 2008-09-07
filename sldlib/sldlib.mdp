@@ -1,0 +1,31 @@
+<Project name="sldlib" fileversion="2.0" language="C#" clr-version="Net_2_0" ctype="DotNetProject">
+  <Configurations active="Debug">
+    <Configuration name="Debug" ctype="DotNetProjectConfiguration">
+      <Output directory="bin/Debug" assembly="sldlib" />
+      <Build debugmode="True" target="Library" />
+      <Execution runwithwarnings="True" consolepause="False" runtime="MsNet" clr-version="Net_2_0" />
+      <CodeGeneration compiler="Mcs" warninglevel="4" optimize="True" unsafecodeallowed="False" generateoverflowchecks="True" definesymbols="DEBUG" generatexmldocumentation="False" ctype="CSharpCompilerParameters" />
+    </Configuration>
+    <Configuration name="Release" ctype="DotNetProjectConfiguration">
+      <Output directory="bin/Release" assembly="sldlib" />
+      <Build debugmode="False" target="Library" />
+      <Execution runwithwarnings="True" consolepause="False" runtime="MsNet" clr-version="Net_2_0" />
+      <CodeGeneration compiler="Mcs" warninglevel="4" optimize="True" unsafecodeallowed="False" generateoverflowchecks="True" generatexmldocumentation="False" ctype="CSharpCompilerParameters" />
+    </Configuration>
+  </Configurations>
+  <Contents>
+    <File name="MyClass.cs" subtype="Code" buildaction="Compile" />
+    <File name="AssemblyInfo.cs" subtype="Code" buildaction="Compile" />
+    <File name="Rezolucja.cs" subtype="Code" buildaction="Nothing" />
+    <File name="../rezolucja2.drl" subtype="Code" buildaction="EmbedAsResource" />
+  </Contents>
+  <References>
+    <ProjectReference type="Gac" localcopy="True" refto="System, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
+    <ProjectReference type="Assembly" localcopy="True" refto="../ddn/drools-3.0.dll" />
+    <ProjectReference type="Assembly" localcopy="True" refto="../ddn/drools-dep.dll" />
+    <ProjectReference type="Assembly" localcopy="True" refto="../ddn/IKVM.GNU.Classpath.dll" />
+    <ProjectReference type="Assembly" localcopy="True" refto="../ddn/IKVM.Runtime.dll" />
+    <ProjectReference type="Assembly" localcopy="True" refto="../ddn/nunit.framework.dll" />
+    <ProjectReference type="Assembly" localcopy="True" refto="../ddn/drools.dotnet.dll" />
+  </References>
+</Project>

@@ -65,7 +65,6 @@ FILES = \
 DATA_FILES = 
 
 RESOURCES = \
-	../unifikacja.drl \
 	../rezolucja2.drl 
 
 EXTRAS = \

@@ -27,6 +27,7 @@
 //
 //
 using System;
+using System.IO;
 using sldlib;
 namespace sldres
 	
@@ -36,10 +37,17 @@ namespace sldres
 	public class Start {
 		
 		public static void Main(string[] args) {
+			System.Collections.ArrayList al = new System.Collections.ArrayList();
+			TextReader tr = new StreamReader("klauzule.txt");
+			string linia;
+			linia = tr.ReadLine();
+			while (linia != null) {
+				al.Add(linia);
+				linia = tr.ReadLine();
+			}
+			tr.Close();
 			MyClass mc = new MyClass();
-			mc.Run();
-			//Rezolucja r = new Rezolucja();
-			//r.Run();
+			mc.Run(al);
 			
 		}
 	}

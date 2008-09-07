@@ -32,119 +32,227 @@ import sldlib;
 #global System.Int32 i;
 
 rule "unifikator"
-no-loop true;
+/*
+ * pr1 - predykat wybrany zgodnie z regula obliczeniowa. Domyslnie - pierwszy atom pierwszej klauzuli 
+ * pr2 - predykat - pierwszy atom klauzuli wybranej zgodnie z regula wyszukiwania
+ * arg1 - pierwszy argument predykatu
+ * nazwa - symbol predykatowy
+ * nf - numer klauzuli, ktorej jest elementem
+ * np - pozycja w klauzuli - np == 0 - skrajnie lewa
+ * cl - klauzula z ktora predykat ostatnio tworzyl rezolwente
+ * var1 - jesli rowna sie 'true' - arg1 jest zmienna
+ * argc - liczba argumentow predykatu
+ * 
+ * Regula stosowana, gdy pr2.arg1 jest zmienna. W takim wypadku bez wzgledu na typ pr1.arg1 do zbioru
+ * unifikatora dodawane jest podstawienie pr2.arg1 = pr1.arg1.
+ */
+ 
+salience 1000; // ustalenie priorytetu dla reguly
 when
 	pr1:Predykat($nazwa:nazwa, n:nf, np == 0, argc >= 1, $cl:cl >= 0)
     v:Vars($vf:nf == n, $vp:np)
 	pr2:Predykat(nazwa == $nazwa, var1 == true, np == 0, argc >= 1, nf > $cl)
 	not(Unifikator())
 then
+//		System.Console.WriteLine("Regula unifikator");
 	v.uform = pr2.nf;
 	modify(v);
+	System.Console.WriteLine(v.uform+" "+pr1.cl);
 	pr1.cl = pr2.nf;
 	modify(pr1);
 	assert(new Unifikator(pr2.arg1,null,pr1.arg1,null));
-	System.Console.WriteLine("1.. Dodano unifikator {0} = {1} {2}",pr2.arg1,pr1.arg1,pr2.nf);
+	System.Console.WriteLine("1.. Podstawienie {0} = {1}",pr2.arg1,pr1.arg1);
 end
 
 rule "unifikator_2"
-no-loop true;
+/*
+ * pr1 - predykat wybrany zgodnie z regula obliczeniowa. Domyslnie - pierwszy atom pierwszej klauzuli 
+ * pr2 - predykat - pierwszy atom klauzuli wybranej zgodnie z regula wyszukiwania
+ * arg2 - drugi argument predykatu
+ * nazwa - symbol predykatowy
+ * uform - numer klauzuli wybranej zgodnie z regula wyszukiwania. musi byc rowny pr2.nf
+ * nf - numer klauzuli, ktorej jest elementem
+ * np - pozycja w klauzuli - np == 0 - skrajnie lewa
+ * cl - klauzula z ktora predykat ostatnio tworzyl rezolwente
+ * var2 - jesli rowna sie 'true' - arg2 jest zmienna
+ * argc - liczba argumentow predykatu
+ * 
+ * Regula stosowana, gdy pr2.arg2 jest zmienna. W takim wypadku bez wzgledu na typ pr1.arg2 do zbioru
+ * unifikatora dodawane jest podstawienie pr2.arg2 = pr1.arg2. Warunkiem zastosowania reguly jest istnienie obiektu
+ * typu 'Unifikator()', co jest gwarancja tego, ze pierwsze argumenty pr1 i pr2 uda sie uzgodnic
+ */
+ 
+salience 1000;
 when
 	pr1:Predykat($nazwa:nazwa, n:nf, np == 0, argc == 2, $cl:cl > 0)
-//	v:Vars($vf:nf == n, $uform:uform)
     pr2:Predykat(nazwa == $nazwa, var2==true, np == 0, argc == 2, $pf:nf)
     v:Vars(nf == n, uform == $pf)
 	u:Unifikator(krok == 0)
 then
+//	System.Console.WriteLine("Regula unifikator 2");
     u.var2 = pr2.arg2;
 	u.sub2 = pr1.arg2;
 	u.krok++;
 	modify(u);
-	System.Console.WriteLine("===================\n cl0: {0}, pr2.nf: {1}, v.uform: {2}", pr1.cl, pr2.nf, v.uform);
-	System.Console.WriteLine("2... Dodano unifikator {0} = {1}\n==================",pr2.arg2,pr1.arg2);
+	System.Console.WriteLine("2... Podstawienie {0} = {1}",pr2.arg2,pr1.arg2);
 end
 
 rule "unifikator_3"
-no-loop true;
+/*
+ * pr1 - predykat wybrany zgodnie z regula obliczeniowa. Domyslnie - pierwszy atom pierwszej klauzuli 
+ * pr2 - predykat - pierwszy atom klauzuli wybranej zgodnie z regula wyszukiwania
+ * arg1 - pierwszy argument predykatu
+ * nazwa - symbol predykatowy
+ * nf - numer klauzuli, ktorej jest elementem
+ * np - pozycja w klauzuli - np == 0 - skrajnie lewa
+ * cl - klauzula z ktora predykat ostatnio tworzyl rezolwente
+ * var1 - jesli rowna sie 'true' - arg1 jest zmienna
+ * argc - liczba argumentow predykatu
+ * 
+ * Regula stosowana, gdy pr2.arg1 jest stala, a pr1.arg1 jest zmienna. Dodawane jest podstawienie pr1.arg1 = pr2.arg1
+ */
+salience 1000;
 when
 	pr1:Predykat($nazwa:nazwa, n:nf, np == 0, argc >= 1, var1 == true, $cl:cl >= 0)
     v:Vars($vf:nf == n)
 	pr2:Predykat(nazwa == $nazwa, var1 == false, np == 0, argc >= 1, nf > $cl)
 	not(Unifikator())
 then
+//	System.Console.WriteLine("Regula unifikator 3");
 	v.uform = pr2.nf;
 	modify(v);
 	pr1.cl = pr2.nf;
 	modify(pr1);
 	assert(new Unifikator(pr1.arg1,null,pr2.arg1,null));
-	System.Console.WriteLine("3.. Dodano unifikator {0} = {1}",pr1.arg1,pr2.arg1);
+	System.Console.WriteLine("3.. Podstawienie {0} = {1}",pr1.arg1,pr2.arg1);
 end
 
 rule "unifikator_4"
-no-loop true;
+/*
+ * pr1 - predykat wybrany zgodnie z regula obliczeniowa. Domyslnie - pierwszy atom pierwszej klauzuli 
+ * pr2 - predykat - pierwszy atom klauzuli wybranej zgodnie z regula wyszukiwania
+ * u - unifikator - zbior podstawien uzgadniajacych
+ * arg2 - drugi argument predykatu
+ * nazwa - symbol predykatowy
+ * uform - numer klauzuli wybranej zgodnie z regula wyszukiwania. musi byc rowny pr2.nf
+ * nf - numer klauzuli, ktorej jest elementem
+ * np - pozycja w klauzuli - np == 0 - skrajnie lewa
+ * cl - klauzula z ktora predykat ostatnio tworzyl rezolwente
+ * var2 - jesli rowna sie 'true' - arg2 jest zmienna
+ * argc - liczba argumentow predykatu
+ * 
+ * Regula stosowana, gdy pr2.arg2 jest stala a pr1.arg2 zmienna. W takim wypadku  podstawienie pr1.arg2 = pr2.arg2. 
+ * Warunkiem zastosowania reguly jest istnienie obiektu typu 'Unifikator()', co jest gwarancja tego, ze pierwsze 
+ * argumenty pr1 i pr2 uda sie uzgodnic
+ */
+salience 1000;
 when
+
 	pr1:Predykat($nazwa:nazwa, n:nf, np == 0, argc == 2, var2 == true, cl > 0)
 	v:Vars($vf:nf == n, $uform:uform)
     pr2:Predykat(nazwa == $nazwa, var2 == false, np == 0, argc == 2, nf == $uform)
 	u:Unifikator(krok == 0)
 then
+//	System.Console.WriteLine("Regula unifikator 4");
 	u.var2 = pr1.arg2;
 	u.sub2 = pr2.arg2;
 	u.krok++;
 	modify(u);
-	System.Console.WriteLine("++++++++++++++++\n cl0: {0}, pr2.nf: {1}", pr1.cl, pr2.nf);
-	System.Console.WriteLine("4.. Dodano unifikator {0} = {1}\n+++++++++++++++++++++",u.var2,u.sub2);
+	System.Console.WriteLine("4.. Podstawienie: {0} = {1}",u.var2,u.sub2);
 end
 
 rule "unifikator_5"
-no-loop true;
+
+/*
+ * pr1 - predykat wybrany zgodnie z regula obliczeniowa. Domyslnie - pierwszy atom pierwszej klauzuli 
+ * pr2 - predykat - pierwszy atom klauzuli wybranej zgodnie z regula wyszukiwania
+ * arg1 - pierwszy argument predykatu
+ * nazwa - symbol predykatowy
+ * nf - numer klauzuli, ktorej jest elementem
+ * np - pozycja w klauzuli - np == 0 - skrajnie lewa
+ * cl - klauzula z ktora predykat ostatnio tworzyl rezolwente
+ * var1 - jesli rowna sie 'true' - arg1 jest zmienna
+ * argc - liczba argumentow predykatu
+ * 
+ * Regula stosowana, gdy pr2.arg1 jest stala i pr1.arg1 jest stala. Jesli pr1.arg1 == pr2.arg1 to dodawane jest podstawienie
+ * pr1.arg1 = pr2.arg1. Ma znaczenie jedynie dla zachowania konwencji. W trakcie tworzenia rezolwenty takie podstawienie nie znajdzie 
+ * bowiem zastosowania
+ */
+ 
+salience 1000;
 when
 	pr1:Predykat($nazwa:nazwa, n:nf, np == 0, argc >= 1, var1 == false, $a1:arg1, $cl:cl >= 0)
 	v:Vars($vf:nf == n, $vp:np)
     pr2:Predykat(nazwa == $nazwa, var1 == false, np == 0, argc >= 1, arg1 == $a1, nf > $cl)
 	not(Unifikator())
 then
+//	System.Console.WriteLine("Regula unifikator 5");
 	v.uform = pr2.nf;
 	modify(v);
 	pr1.cl = pr2.nf;
 	modify(pr1);
 	assert(new Unifikator(pr1.arg1,null,pr2.arg1,null));
-	System.Console.WriteLine("5 ... Dodano unifikator {0} = {1}",pr1.arg1,pr2.arg1);
+//	System.Console.WriteLine("5 ... Podstawienie {0} = {1}",pr1.arg1,pr2.arg1);
 end
 
 rule "unifikator_6"
-no-loop true;
+/*
+ * pr1 - predykat wybrany zgodnie z regula obliczeniowa. Domyslnie - pierwszy atom pierwszej klauzuli 
+ * pr2 - predykat - pierwszy atom klauzuli wybranej zgodnie z regula wyszukiwania
+ * arg2 - drugi argument predykatu
+ * nazwa - symbol predykatowy
+ * uform - numer klauzuli wybranej zgodnie z regula wyszukiwania. musi byc rowny pr2.nf
+ * nf - numer klauzuli, ktorej jest elementem
+ * np - pozycja w klauzuli - np == 0 - skrajnie lewa
+ * cl - klauzula z ktora predykat ostatnio tworzyl rezolwente
+ * var2 - jesli rowna sie 'true' - arg2 jest zmienna
+ * argc - liczba argumentow predykatu
+ * 
+ * Regula stosowana, gdy pr2.arg2 jest stala i pr1.arg2 jest stala. W takim wypadku jesli pr1.arg2 == pr2.arg2 do zbioru
+ * unifikatora dodawane jest podstawienie pr1.arg2 = pr2.arg2. Warunkiem zastosowania reguly jest istnienie obiektu
+ * typu 'Unifikator()', co jest gwarancja tego, ze pierwsze argumenty pr1 i pr2 uda sie uzgodnic
+ */
+
+salience 1000;
 when
 	pr1:Predykat($nazwa:nazwa, n:nf, np == 0, argc == 2, var2 == false, $a2:arg2, cl > 0)
 	v:Vars($vf:nf == n, $uform:uform)
     pr2:Predykat(nazwa == $nazwa, var2 == false, np == 0, argc == 2, arg2 == $a2, nf == $uform)
 	u:Unifikator(krok == 0)
 then
-//	v.uform = pr2.nf;
-//	modify(v);
+
+//	System.Console.WriteLine("Regula unifikator 6");
 	u.var2 = pr1.arg2;
 	u.sub2 = pr2.arg2;
 	u.krok++;
 	modify(u);
-	System.Console.WriteLine("********************\n cl0: {0}, pr2.nf: {1}", pr1.cl, pr2.nf);
-		System.Console.WriteLine("pr1.nf: {0}, v.nf {1}, pr2.nf {2}",pr1.nf,v.nf,pr2.nf);
-	System.Console.WriteLine("6.. Dodano unifikator {0} = {1}\n********************",u.var2,u.sub2);
+//	System.Console.WriteLine("6.. Podstawienie {0} = {1}",u.var2,u.sub2);
 end
 
 rule "predykat unarny"
+/* jesli predykat jest unarny (tzn. argc == 1), to regula wymusza ominiecie stosowania regul tworzenia podstawien dla 
+ * predykatow binarnych. Odbywa sie to droga zwiekszenia zmiennej u.krok o 1	
+ */
+
+salience 1000;
 no-loop;
 when
 	u:Unifikator(krok == 0)
 	p:Predykat(argc == 1, $nf:nf)
 	v:Vars(uform == $nf)
 then
+//	System.Console.WriteLine("Regula unifikator unarny");
 	u.krok++;
 	modify(u);
 	System.Console.WriteLine("predykat unarny {0}",p.nazwa);
 end
 
 rule "dodaj 1"
-no-loop;
+/* pierwsza regula uzywana do tworzenia rezolwenty.
+ * dla kazdego predykatu o indeksie nf == v.uform tworzone sa nowe obiekty tego typu z indeksem nf = v.nf-1.
+ * wartosc argumentu pierwszego wynika z uzytego podstawienia
+ * zmienna v.last oznacza pozycje takiego atomu w nowej rezolwencie. domyslnie v.last = 0
+ */
 when
 	v:Vars($next:next, $form:uform)
 	u:Unifikator(krok == 1)
@@ -159,10 +267,13 @@ then
         else {
                 assert(new Predykat(p.nazwa,p.arg1,v.nf-1,v.last));
         }
-	u.krok++;
-	modify(u);
-	if (p.argc == 1)
+    if (p.argc == 2) { // nalezy wykonac regule 'dodaj 2' jesli predykat jest binarny
+		u.krok++;
+		modify(u);
+	}
+	if (p.argc == 1) // regula 'dodaj 2' nie zostanie wykonana, wiec mozna wykonac kopie kolejnego predykatu wybranej klauzuli
 	{
+		System.Console.WriteLine("[Nowa rezolwenta] nazwa: {0}, argc: {1}, np: {2}, nf: {3}",p.nazwa,p.argc,v.last,v.nf-1);
 		v.last++;
 		v.next++;
 		modify(v);
@@ -171,7 +282,10 @@ then
 end
 		
 rule "dodaj 2"
-no-loop;
+/* regula stosowana jesli kolejny predykat z klauzuli wybranej zgodnie z regula wyszukiwania jest binarny.
+ * zmienna u.krok wskazuje ze wczesniej utworzono jego kopie, wiec mozna do arg2 tego obiektu bedzie mial wartosc
+ * wynikajaca ze zastosowanych podstawien unifikatora
+ */ 
 when
 	v:Vars($next:next, $form:uform, $last:last, $vf:nf)
 	u:Unifikator(krok == 2)
@@ -182,32 +296,33 @@ then
 		nowy.argc = 2;
 		nowy.arg2 = u.sub1;
 		modify(nowy);
-		System.Console.WriteLine("Nowa rezolwenta {0}({1},{2}) nf: {3}, np: {4}",nowy.nazwa,nowy.arg1,u.sub1,nowy.nf,nowy.np);
 	}
 	else if (p.arg2 == u.var2) {
 		nowy.argc = 2;
 		nowy.arg2 = u.sub2;
 		modify(nowy);
-		System.Console.WriteLine("Nowa rezolwenta {0}({1},{2}) nf: {3}, np: {4}",nowy.nazwa,nowy.arg1,u.sub2,nowy.nf,nowy.np);
 	}
         else {
 		nowy.argc = 2;
 		nowy.arg2 = p.arg2;
 		modify(nowy);
-		System.Console.WriteLine("Nowa rezolwenta {0}({1},{2}) nf: {3}, np: {4}",nowy.nazwa,nowy.arg1,nowy.arg2,nowy.nf,nowy.np);
 	}
 	if (p.argc == 2)
 	{
+		System.Console.WriteLine("[Nowa rezolwenta] nazwa: {0}, argc: {1} np: {2}, nf: {3}",nowy.nazwa, nowy.argc, nowy.np,nowy.nf);
 		v.last++;
 		v.next++;
 		modify(v);
 	}
-	u.krok--;
+	u.krok--; // nalezy sprawdzic, czy predykat nie jest ostatnim w klauzuli
 	modify(u);	
 end
 
 rule "rezolwenta c.d"
-no-loop;
+/* wartosc zmiennej u.krok wskazuje, ze wszystkie predykaty klauzuli wybranej regula wyszukiwania zostaly skopiowane. Nalezy zatem
+ * skopiowac atomy z klauzuli o najmniejszym indeksie nf (na poczatku rownym 0). ta regula dziala analogicznie do reguly 'dodaj 1'
+ */
+//no-loop;
 when
 	u:Unifikator(krok == 3)
 	p:Predykat(nazwa:nazwa, f:nf, pp:np, argc >= 1)
@@ -215,66 +330,51 @@ when
 then
 	if (p.arg1 == u.var1) {
 		assert(new Predykat(p.nazwa,u.sub1,v.nf-1,v.last));
-		System.Console.WriteLine("{0}({1}), nf: {2}, np: {3}",p.nazwa, u.sub1, p.nf, p.np);
 	}
 	else if (p.arg1 == u.var2) {
 		assert(new Predykat(p.nazwa,u.sub2,v.nf-1,v.last));
-		System.Console.WriteLine("{0}({1}), nf: {2}, np: {3}",p.nazwa, u.sub2, p.nf, p.np);
 	}
 	else {
 		assert(new Predykat(p.nazwa,p.arg1,v.nf-1,v.last));
-		System.Console.WriteLine("Argumentami predykatow sa stale {0}",p.nazwa);
 	}
-	u.krok++;
-	modify(u);
+	if (p.argc == 2) {
+		u.krok++;
+		modify(u);
+	}
 	if (p.argc == 1) {
+		System.Console.WriteLine("[Nowa rezolwenta] nazwa: {0}, argc: {1}, np: {2}, nf: {3}",p.nazwa,p.argc,v.last,v.nf-1);	
 		v.last++;
 		v.next++;
 		modify(v);
 	}	
 end
 
-rule "pokaz"
-/* usuwanie predykatow klauzuli, z ktorej zostal wykonany nawrot, tzn. v.nf++ */
-when
-	p:Predykat(pf:nf)
-	v:Vars(nf > pf)
-	not(Unifikator())
-then
-	System.Console.WriteLine("Predykat: {0}({1},{2}), np: {3}, nf: {4}, v.nf {5} --  usuwam",p.nazwa,p.arg1,p.arg2, p.np, p.nf, v.nf);
-	retract(p);
-end
-
-
 rule "rezolwenta 2"
-no-loop;
+/* regula ma zadania analogiczne do zadan reguly 'dodaj 2' */
 when
 	u:Unifikator(krok == 4)
 	p:Predykat(f:nf, pp:np, argc == 2,$nazwa:nazwa)
 	v:Vars($vf:nf == f, next == pp, $last:last)
 	nowy:Predykat(nf < $vf, np == $last, nazwa == $nazwa)
 then
-//	System.Console.WriteLine("{0}({1}) nf: {2}, np {3})",nowy.nazwa,nowy.arg1,nowy.nf,nowy.np);
 	if (p.arg2 == u.var1) {
 		nowy.argc = 2;
 		nowy.arg2 = u.sub1;
 		modify(nowy);
-	System.Console.WriteLine("OK {0}({1},{2}) nf: {3}, np: {4}",nowy.nazwa,nowy.arg1,u.sub1,nowy.nf,nowy.np);
 	}
 	else if (p.arg2 == u.var2) {
 		nowy.argc = 2;
 		nowy.arg2 = u.sub2;
 		modify(nowy);
-		System.Console.WriteLine("OK {0}({1},{2}) nf: {3}, np: {4}",nowy.nazwa,nowy.arg1,u.sub2,nowy.nf,nowy.np);
 	}
 	else {
 		nowy.argc = 2;
 		nowy.arg2 = p.arg2;
 		modify(nowy);
-		System.Console.WriteLine("OK {0}({1},{2}) nf: {3}, np: {4}",nowy.nazwa,nowy.arg1,nowy.arg2,nowy.nf,nowy.np);
 	}
 	if (p.argc == 2)
 	{
+		System.Console.WriteLine("[Nowa rezolwenta] nazwa: {0}, argc: {1} np: {2}, nf: {3}",nowy.nazwa, nowy.argc, nowy.np,nowy.nf);	
 		v.last++;
 		v.next++;
 		modify(v);
@@ -284,18 +384,19 @@ then
 end
 
 rule "rezolwenta end"
-no-loop;
-// salience -1000;
+/* jesli kolejnym predykatem klauzuli jest __end() to znaczy, ze tworzenie rezolwenty zostalo ukonczone. Na jej koncu zostaje
+ * ustawiony znacznik konca klauzuli __end(). Zmienna v.nf przechowujaca najmniejszy indeks nf zostaje zmniejszona o jeden, tak by
+ * wskazywala na nowo utworzona rezolwente. Unifikator zostaje usuniety
+ */
 when 
 	p:Predykat(f:nf, pp:np, argc == 0, nazwa == "__end")
 	v:Vars(nf == f, next == pp)
 	u:Unifikator(krok >= 3)
 then
-        System.Console.WriteLine("last: "+v.last);
         if (v.last != 0) {
             retract(u);
            	assert(new Predykat("__end",v.nf-1,v.last));
-	    	System.Console.WriteLine("koniec rezolwenty" + v.last);
+	    	System.Console.WriteLine("======== koniec nowej rezolwenty nf {0} ==============", v.nf-1);
             v.nf--;
             v.last=0;
             v.next=1;
@@ -303,19 +404,21 @@ then
         }
         else {
         	//retract(p);
-            System.Console.WriteLine("Sukces");
+            System.Console.WriteLine("* YES * ");
+            retract(v);
         }
 end
 
 rule "form end"
+/* jesli kolejnym predykatem klauzuli wybranej zgodnie z regula wyszukiwania jest atom __end() to wtedy
+ * zmienna u.krok otrzymuje wartosc 3. Oznacza to, ze wszystkie predykaty zostaly juz skopiowane
+ */
 no-loop;
-salience -2000;
 when
 	p:Predykat(f:nf, pp:np, argc == 0)
 	v:Vars(uform == f, next == pp, vf:nf)
-	u:Unifikator()
+	u:Unifikator(krok < 3)
 then
-	System.Console.WriteLine("OK {0} {1}",p.nazwa,p.nf);
 	u.krok = 3;
 	modify(u);
  	v.next = 1;
@@ -323,43 +426,72 @@ then
 end
 
 
-rule "retract unifikator argc == 1"
-no-loop
+rule "brak podstawienia 1"
+/* pr1.arg1 i pr2.arg1 sa stalymi, pr1.arg1 != pr2.arg1, wiec nie mozna utworzyc unifikatora
+ *
+ */
+//no-loop
 when
 	v:Vars($vf:nf, $vp:np)
 	pr1:Predykat($nazwa:nazwa, nf==$vf, np == 0, argc >= 1, var1 == false, $a1:arg1, $cl:cl >= 0)
 	pr2:Predykat(nazwa == $nazwa, var1 == false, np == 0, argc >= 1, arg1 != $a1, nf > $cl)
 	not(Unifikator())
 then
+	
+	modify(v);
 	pr1.cl = pr2.nf;
 	modify(pr1);
-		System.Console.WriteLine("pr1.nf: {0}, v.nf {1}, pr2.nf {2}",pr1.nf,v.nf,pr2.nf);
 	System.Console.WriteLine("Nie mozna uzgodnic predykatow {0} != {1} pr1.nf: {2}, pr2.nf: {3}",pr1.arg1,pr2.arg1, pr1.nf, pr2.nf);
 end
 	
 
-rule "usun unifikator argc == 2"
-no-loop
+rule "brak podstawienia 2"
+/* pr1.arg2 i pr2.arg2 sa stalymi, pr1.arg2 != pr2.arg2, wiec utworzony unifikator nalezy usunac, gdyz nie uda sie uzgodnic
+ * predykatow
+ */
 when
 	v:Vars($vf:nf, $uform:uform)
 	pr1:Predykat($nazwa:nazwa, nf==$vf, np == 0, argc == 2, var2 == false, $a1:arg2, cl > 0)
 	pr2:Predykat(nazwa == $nazwa, var2 == false, np == 0, argc == 2, arg2 != $a1, nf == $uform)
 	u:Unifikator(krok == 0)
 then
+	v.fail = 0;
+	modify(v);
 	retract(u);
-	System.Console.WriteLine("Unifikator usuniety {0} != {1}",pr1.arg2,pr2.arg2);
+	System.Console.WriteLine("usun 2: Nie mozna uzgodnic predykatow {0} != {1}  pr1.nf: {2}, pr2.nf: {3}",pr1.arg2,pr2.arg2, pr1.nf, pr2.nf);
 end
 
 rule "nawrot"
-no-loop
+/* nie ma unifikatora, wszystkie klauzule kolidujace w zbiorze zostaly sprawdzone (bez sukcesu) wiec nalezy wykonac
+ * nawrot do klauzuli v.nf + 1. Jesli v.nf == 0 oznacza to, ze zbior klauzul jest spelnialny - fail
+ *
+*/
 when
     v:Vars($vf:nf)
     not(Unifikator())
     pr:Predykat($nazwa:nazwa, argc >=1, nf == $vf, np == 0, $cl:cl)
-    not(Predykat(nazwa == $nazwa, nf > $cl, argc >= 1))
+    not(Predykat(nazwa == $nazwa, nf > $cl, argc >= 1, np == 0))
     
 then
-	v.nf++;
-	modify(v);
-    System.Console.WriteLine("Nawrot: {0}({1},{2}), pr.cl: {3}, pr.nf: {4}",pr.nazwa,pr.arg1,pr.arg2,pr.cl,pr.nf);
+	if (v.nf < 0) {
+		v.nf++;
+//		v.fail = 1;
+		modify(v);
+    	System.Console.WriteLine("Nawrot do klauzuli nf: {0}",v.nf);
+    }
+    else {
+    	retract(v);
+    	System.Console.WriteLine("* NO *");
+    }
+end
+
+rule "usun"
+/* usuwanie predykatow klauzuli, z ktorej zostal wykonany nawrot, tzn. v.nf++ */
+salience -100;
+when
+	p:Predykat(pf:nf)
+	v:Vars(nf > pf)
+	not(Unifikator())
+then
+	retract(p);
 end

@@ -50,17 +50,15 @@ namespace sldlib
 		}
 		
 
-		public void Run() {
+		public void Run(System.Collections.ArrayList str) {
 			
 			Regex rx = new Regex(@"([a-z][a-z0-9]*)\(([a-zA-Z0-9]+),?([a-zA-Z0-9]+)?\)");
 			WorkingMemory wm = Laduj("rezolucja2.drl");
-			string[] str = {"lubi(ola,ela)","lubi(M,N),znajome(M,N)","lubi(G,I),kolezanki(I,G)","lubi(G,I),kolezanki(G,I)","kolezanki(ola,ela)","znajome(kasia,asia)"};
 			int nf  = 0;
 			int np = 0;
 			string s;
-		//	foreach (string s in str) {
-			for (int i = str.Length-1; i > -1; i--) {
-				s = str[i];
+			for (int i = str.Count-1; i > -1; i--) {
+				s = str[i].ToString();
 				nf = i;
 				Match m = rx.Match(s);
 				while (m.Success) {
@@ -69,13 +67,6 @@ namespace sldlib
 					if (gc[3].Value == "") {
 						Predykat p = new Predykat(gc[1].Value,gc[2].Value,nf,np);
 						Console.WriteLine("Nazwa: {0}, arg1: {1}, nf: {2}, np: {3}",p.nazwa,p.arg1,p.nf,p.np); 
-						if (p.var1)
-						{
-							Console.WriteLine("zmienna");
-						}
-						else {
-							Console.WriteLine("stala");
-						}
 						wm.assertObject(p);
 						
 					}
@@ -87,7 +78,7 @@ namespace sldlib
 					np ++;	
 					m = m.NextMatch();
 				}
-				Predykat e = new Predykat("__end",nf,np);
+				Predykat e = new Predykat("__end",nf,np); // znacznik konca klauzuli
 				wm.assertObject(e);
 				np = 0;
 				//nf++;
@@ -111,15 +102,15 @@ namespace sldlib
 	
 	public class Predykat {
 		
-		private string nazwastr;
-		private string arg1str = null;
-		private string arg2str = null;
-		private int argcint;
+		private string nazwastr; // nazwa symbolu predykatowego
+		private string arg1str = null; // argument 1
+		private string arg2str = null; // argument 2
+		private int argcint; // liczba argumentow predykatu
 		private int nfint; /* numer formuly 0 == formula sprawdzana */
 		private int npint; /* numer predykatu w formule - 0 == zanegowany */
-		private int clint; 
-		private bool v1 = false;
-		private bool v2 = false;
+		private int clint; // indeks klauzuli, z ktora byl uzgadniany ostatnio
+		private bool v1 = false; // jesli == false - argument 1 jest stala
+		private bool v2 = false; 
 		
 		public Predykat(string n, int f, int p)
 		{
@@ -139,7 +130,7 @@ namespace sldlib
 			this.argcint = 2;
 			this.clint = 0;
 			if (!char.IsLower(this.arg1str[0])) {
-				this.v1 = true;
+				this.v1 = true; // jesli nazwa argumentu nie rozpoczyna sie od malej litery, to jest on zmienna
 			}
 			if (!char.IsLower(this.arg2str[0])) {
 				this.v2 = true;
@@ -164,7 +155,11 @@ namespace sldlib
 		}
 		
 		public string arg1 {
-			set {this.arg1str = value;}
+			set {this.arg1str = value;
+				if (!char.IsLower(this.arg1str[0])) {
+					this.v1 = true;
+				}
+			}
 			get {return this.arg1str;}
 		}
 		
@@ -173,6 +168,9 @@ namespace sldlib
 				if (this.argcint == 2) {
 					this.arg2str = value;
 				}
+				if (!char.IsLower(this.arg2str[0])) {
+					this.v2 = true;
+				}				
 			}
 			get {return this.arg2str;}
 		}
@@ -211,7 +209,7 @@ namespace sldlib
 		private int fint; // indeks formuły sprawdzanej
 		private int pint;
 		private int ufint; // indeks formuły unifikowanej
-		private int nextint =  1;
+		private int nextint =  1; // indeks nastepnego predykatu, ktory dodawany jest do nowej rezolwenty
 		private int lastint = 0; // indeks ostatniego predykatu w rezolwencie
 		private int failbl = 0;
 		
@@ -256,11 +254,11 @@ namespace sldlib
 	
 	public class Unifikator {
 		
-		private string var1str;
-		private string var2str;
-		private string sub1str;
-		private string sub2str;
-		private int kint;
+		private string var1str; // zmienna 
+		private string var2str; // zmienna
+		private string sub1str; // wartosc podstawiana
+		private string sub2str; //  ""      ""
+		private int kint; // krok - etap na ktorym znajduje sie przetwarzanie
 		
 		public Unifikator(string v1, string v2, string s1, string s2) {
 			this.var1str = v1;

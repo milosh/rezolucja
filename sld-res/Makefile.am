@@ -73,8 +73,7 @@ FILES = \
 
 DATA_FILES = 
 
-RESOURCES = \
-	../unifikacja.drl 
+RESOURCES = 
 
 EXTRAS = \
 	sld-res.in 
