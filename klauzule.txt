@@ -1,0 +1,8 @@
+napadli(husyci,wies)
+region(slask,X):-co(X)
+warstwa(O):-zabytek(O)
+napadli(K,X):-region(slask,X),warstwa(xv),kto(K)
+kto(K):-bron(K,cepy),bron(K,kosy)
+zabytek(xv)
+co(wies)
+bron(husyci,cepy)
