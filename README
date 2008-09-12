@@ -5,4 +5,9 @@ To run 'rezolucja' you need:
 Installation:
  - get *.dll file from site above and unpack to ddn/ directory
  - type ./configure && make
- - type mono sld-res/bin/Debug/sld-res.exe
+
+Using:
+ 1) edit file 'klauzule.txt', which contains set of verified clauses
+ 2) run mono ./sld-res/Debug/sld-res.exe
+ 3) after procesing of clauses on screen you see "* NO *", which means, 
+that first clause is false. 

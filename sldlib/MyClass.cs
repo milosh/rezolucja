@@ -89,6 +89,8 @@ namespace sldlib
 		}
 		[Test]
 		public WorkingMemory Laduj(string drlname) {
+			System.Console.WriteLine("Kompilacja regul. 
+Prosze czekac ...");
 			System.IO.Stream stream = Assembly.GetAssembly(this.GetType()).GetManifestResourceStream(drlname);
 			PackageBuilder builder = new PackageBuilder();
 			builder.AddPackageFromDrl(stream);
